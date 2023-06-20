@@ -1,13 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32106.194
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPM.Mouser.Interview.Web", "EPM.Mouser.Interview.Web\EPM.Mouser.Interview.Web.csproj", "{6FA7BEF1-96A3-44B7-A1C4-52193DB39B63}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DLL", "DLL", "{77367EA8-06E6-4285-93C4-CD6FABF3A2B5}"
 	ProjectSection(SolutionItems) = preProject
 		DLL\EPM.Mouser.Interview.Data.dll = DLL\EPM.Mouser.Interview.Data.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2A4EBE53-FBD8-487C-BA93-B61B9C9A70A7}"
+	ProjectSection(SolutionItems) = preProject
+		Hardip Grewal.txt = Hardip Grewal.txt
 	EndProjectSection
 EndProject
 Global

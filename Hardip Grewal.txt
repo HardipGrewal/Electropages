@@ -1,0 +1,14 @@
+Hi,
+
+Sorry but I couldn't complete the front end, as I couldn't get the model to pass the data to the page.  It has been 2 years since I have worked with MVC, I am now currently working with Angular.
+
+Recommendations:
+
+long Id should be a GUID
+Using Authentification
+Upgrading the project to Angular/Blazer
+
+Assumtions
+Although I didn't get the front end working, assuming the error is raised in the Dll, hence using the try and catch
+When Inserting or updating, wasn't sure weather you pass in id = 1 as in the example, or pass null
+Assumed that the Error would be logged for it to be picked up and returned.

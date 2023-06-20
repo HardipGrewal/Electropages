@@ -1,5 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Test Page";
+﻿@model EPM.Mouser.Interview.Web.Controllers.WarehouseApi
+
+@{
+    ViewData["Title"] = "Index";
 }
 
 
@@ -10,9 +12,13 @@
     - use the bootstrap table styling
     - Available stock = Total Stock - Reserved Stock
     - Columns shown:
-        - action => with a link to a placeholder product detail page. 
+        - action => with a link to a placeholder product detail page.
         - Name
         - Total Amount in stock
         - Available stock (this should be orange if < 10 and red < zero)
 
 *@
+<div>
+    @await Html.PartialAsync("../WarehouseApi/GetPublicInStockProducts.cshtml")
+    
+</div>

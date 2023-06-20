@@ -1,19 +1,54 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using EPM.Mouser.Interview.Data;
+using System.Text.Json;
+using System.Net;
+using System.Collections.Generic;
+using EPM.Mouser.Interview.Models;
+using OfficeDevPnP.Core.Framework.Provisioning.Model;
+using Newtonsoft.Json;
+using System.Web.Http.Results;
 
 namespace EPM.Mouser.Interview.Web.Controllers
 {
+    
+    public class GetProduct
+    {
+        private List<Product> products;
+        private WarehouseApi whAPI = new WarehouseApi();
+        public List<Product> Products { get
+            {
+                JsonResult jsonResult = whAPI.GetPublicInStockProducts();
+                return products = JsonConvert.DeserializeObject<List<Product>>(jsonResult.ToString());
+            }
+            set => products = value; }
+    }
     public class WarehouseApi : Controller
     {
 
+        public ActionResult Index()
+        {
+           
+            return View();
+        }
+
+        
         /*
-         *  Action: GET
-         *  Url: api/warehouse/id
-         *  This action should return a single product for an Id
-         */
+*  Action: GET
+*  Url: api/warehouse/id
+*  This action should return a single product for an Id
+*/
+        /// <summary>
+        /// Return Product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         public JsonResult GetProduct(long id)
         {
-            return Json(null);
+            var product = new Data.WarehouseRepository();
+            
+            // If implemented in real world long should be avoided for id, instead using GUID
+            return Json(product.Get(id));
         }
 
         /*
@@ -22,10 +57,16 @@ namespace EPM.Mouser.Interview.Web.Controllers
          *  This action should return a collection of products in stock
          *  In stock means In Stock Quantity is greater than zero and In Stock Quantity is greater than the Reserved Quantity
          */
+        /// <summary>
+        /// Get in stock products
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public JsonResult GetPublicInStockProducts()
         {
-            return Json(null);
+            var warehouseAPI = new Data.WarehouseRepository();
+            Task<List<Models.Product>> products = warehouseAPI.List();
+            return Json(products);
         }
 
 
@@ -46,9 +87,33 @@ namespace EPM.Mouser.Interview.Web.Controllers
          *     - ErrorReason.QuantityInvalid when: A negative number was requested
          *     - ErrorReason.InvalidRequest when: A product for the id does not exist
         */
-        public JsonResult OrderItem()
+        /// <summary>
+        /// Order Item
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        public JsonResult OrderItem(long id, int quantity)
         {
-            return Json(null);
+            var updateResp = new Models.UpdateQuantityRequest();
+            
+            updateResp.Id = id;
+            updateResp.Quantity = quantity;
+
+            try
+            {
+                return Json(updateResp);
+            }
+            catch
+            {
+                var resp = new Models.UpdateResponse();
+                //if (resp.Success == false)
+                //{
+                return Json(resp.ErrorReason);
+                //}
+            }
+            
+            
         }
 
         /*
@@ -70,9 +135,44 @@ namespace EPM.Mouser.Interview.Web.Controllers
          *     - ErrorReason.QuantityInvalid when: A negative number was requested
          *     - ErrorReason.InvalidRequest when: A product for the id does not exist
         */
-        public JsonResult ShipItem()
+        /// <summary>
+        /// Ship Item
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        public JsonResult ShipItem(long id, int quantity)
         {
-            return Json(null);
+            var updateResp = new Models.UpdateQuantityRequest();
+            var data = new Models.Product();
+
+            data.Id = id;
+            if (data.ReservedQuantity - quantity <= 0)
+            {
+                data.ReservedQuantity = 0;
+            }
+            else
+            {
+                data.ReservedQuantity = data.ReservedQuantity - quantity;
+            }
+            
+            data.InStockQuantity = quantity;
+
+            updateResp.Id = id;
+            updateResp.Quantity = quantity;
+
+            try
+            {
+                return Json(updateResp);
+            }
+            catch
+            {
+                var resp = new Models.UpdateResponse();
+                //if (resp.Success == false)
+                //{
+                return Json(resp.ErrorReason);
+                //}
+            }
         }
 
         /*
@@ -92,9 +192,32 @@ namespace EPM.Mouser.Interview.Web.Controllers
         *     - ErrorReason.QuantityInvalid when: A negative number was requested
         *     - ErrorReason.InvalidRequest when: A product for the id does not exist
         */
-        public JsonResult RestockItem()
+        /// <summary>
+        /// Restock Item
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="quantity"></param>
+        /// <returns></returns>
+        public JsonResult RestockItem(long id, int quantity)
         {
-            return Json(null);
+            _ = new Data.WarehouseRepository();
+            var data = new Models.Product();
+            
+            data.Id = id;
+            data.InStockQuantity = quantity;
+
+            try
+            {
+                return Json(data);
+            }
+            catch
+            {
+                var resp = new Models.UpdateResponse();
+                //if (resp.Success == false)
+                //{
+                return Json(resp.ErrorReason);
+                //}
+            }
         }
 
         /*
@@ -125,9 +248,47 @@ namespace EPM.Mouser.Interview.Web.Controllers
         *     - ErrorReason.QuantityInvalid when: A negative number was requested for the In Stock Quantity
         *     - ErrorReason.InvalidRequest when: A blank or empty name is requested
         */
-        public JsonResult AddNewProduct()
+        /// <summary>
+        /// Add new product
+        /// </summary>
+        /// <param name="productName"></param>
+        /// <returns></returns>
+        public async Task<JsonResult> AddNewProductAsync(string productName)
         {
-            return Json(null);
+            var product = new Data.WarehouseRepository();
+            List<Models.Product> products = await Task.Run(function: () => product.List());
+            
+            var query = products.GroupBy(p => p.Name)
+                .Where(w => w.Count() > 1)
+                .Select(s => s.Key)
+                .ToList();
+
+            // Check for duplicates
+            if (query.Count > 0)
+            {
+                //Duplicate found
+                return Json(null);
+            }
+            else
+            {
+                // Add new
+                var data = new Models.Product();
+
+                data.Id = 1; 
+                data.Name = productName;
+                data.InStockQuantity = 1;
+                data.ReservedQuantity = 1;
+
+                await product.Insert(data);
+                var resp = new Models.UpdateResponse();
+
+                if (resp.Success == false)
+                {
+                    return Json(resp.ErrorReason);
+                }
+                else { return Json(resp.Success); }
+            }
+
         }
     }
 }

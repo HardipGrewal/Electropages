@@ -7,20 +7,28 @@ using EPM.Mouser.Interview.Models;
 using OfficeDevPnP.Core.Framework.Provisioning.Model;
 using Newtonsoft.Json;
 using System.Web.Http.Results;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace EPM.Mouser.Interview.Web.Controllers
 {
     
-    public class GetProduct
+    public class IndexModel : PageModel
     {
-        private List<Product> products;
+        private List<Product>? products;
         private WarehouseApi whAPI = new WarehouseApi();
-        public List<Product> Products { get
-            {
-                JsonResult jsonResult = whAPI.GetPublicInStockProducts();
-                return products = JsonConvert.DeserializeObject<List<Product>>(jsonResult.ToString());
-            }
-            set => products = value; }
+
+        public void OnGet()
+        {
+            
+            JsonResult jsonResult = whAPI.GetPublicInStockProducts();
+            this.products = JsonConvert.DeserializeObject<List<Product>>(jsonResult.ToString());
+        }
+        //public List<Product> Products { get
+        //    {
+        //        JsonResult jsonResult = whAPI.GetPublicInStockProducts();
+        //        return products = JsonConvert.DeserializeObject<List<Product>>(jsonResult.ToString());
+        //    }
+        //    set => products = value; }
     }
     public class WarehouseApi : Controller
     {
